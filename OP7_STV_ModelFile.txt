@@ -1,0 +1,369 @@
+********** MODEL NAME
+Heldt2014 - Defective Interfering RNA replication
+
+********** MODEL NOTES
+This model is based on the model of intracellular influenza A virus replication in a mammalian cell described in the article:
+Modeling the intracellular dynamics of influenza virus replication to understand the control of viral RNA synthesis
+Frank S. Heldt, Timo Frensing, Udo Reichl
+J Virol. August 2012 vol. 86 no. 15; 7806-7818; doi: 10.1128/JVI.00080-12
+
+The original model describes the life cycle of influenza A viruses including the following steps: attachment of parental virions, receptor-mediated endocytosis, fusion of the virus envelope with the endosomal membrane, nuclear import of vRNPs, viral transcription and replication, translation of the structural viral proteins, nuclear export of progeny vRNPs and budding. It also explicitly accounts for the stabilization of cRNA by viral polymerases and NP and the inhibition of vRNP activity by M1 protein binding.
+
+Compared to the original model, we here explicitly account for the vRNPs and cRNPs of each genome segment individually and the synthesis of a defective-interfering RNA originating from segment 3 (encoding the PA protein).
+
+References:
+[1] Amorim et al., J. Virol. 2011, Vol. 85, No. 9, p4143-4156 
+[2] Arava et al, 2003, Proc. Natl. Acad. Sci. USA, Vol 100, No 7, p3889-3894
+[3] Babcock et al., 2004, Biophys. J., Vol. 87, No. 4, p2749-58
+[4] David M. Knipe and Peter M. Howley (ed.), Fields' virology. 4th ed., Lippincott Williams and Wilkins 2001
+[5] Nunes-Correia et al., Biochem. 1999, Vol. 38, No. 3, p1095-1101
+[6] Portela and Digard, J. Gen. Virol., 2002, Vol 83, Pt 4, p723-734
+[7] Robb et. al., 2010, J. Gen. Virol., Vol. 91, Pt. 9, p2331-2340
+[8] Spirin AS, Ribosome structure and protein biosynthesis, 1986, Menlo Park (California), Benjamin/Cummings, 414 p.
+[9] Vreede et al., J. Virol., 2004, Vol 78, No 17, p9568-9572
+[10] Wakefield and Brownlee, Nucleic Acids Res., 1989, Vol 17, No 21, p8569-8580
+[11] Hutchinson et. al., J. Gen. Virol., Feb 2010, Vol. 91, Pt. 2, p313-328
+
+last revised: 2022/05/13
+
+********** MODEL STATES
+
+% Entry of all virus particles
+d/dt(Vex)     = rDisHi  + rDisLo - rAttHi - rAttLo
+d/dt(VattHi)  = rAttHi  - rDisHi - rEnVattHi
+d/dt(VattLo)  = rAttLo  - rDisLo - rEnVattLo
+d/dt(Ven)     = rEn     - rFus   - rDegVen
+d/dt(Vfus)    = rFus
+d/dt(Vcyt)    = rFus    - rImp 
+
+% RNA synthesis of all genome segments (segment 9 denotes the DI-RNA)
+d/dt(VpNuc<k,1:6>) = rImpMedSeg  + rBindNpRv<k> - rBindM17_<k> - rBindM19_<k> - rDegVpNuc<k>
+d/dt(VpNuc7)       = rImpLowSeg  + rBindNpRv7   - rBindM17_7   - rBindM19_7   - rDegVpNuc7 
+d/dt(VpNuc8)       = rImpMedSeg  + rBindNpRv8   - rBindM17_8   - rBindM19_8   - rDegVpNuc8
+d/dt(VpNuc9)       = rImpHighSeg + rBindNpRv9   - rBindM17_9   - rBindM19_9   - rDegVpNuc9
+
+d/dt(Cp<k,1:9>)       = rBindNpRc<k>                - rDegCp<k>
+d/dt(RcRdrp<k,1:9>)   = rSynRc<k>    - rBindNpRc<k> - rDegRcRdrp<k>
+d/dt(RvRdrp<k,1:9>)   = rSynRv<k>    - rBindNpRv<k> - rDegRvRdrp<k>
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+d/dt(VpNucM17_<k,1:9>) = rBindM17_<k>     - rExp7_<k>        - rDegVpNucM17_<k>
+d/dt(VpNucM19_<k,1:9>) = rBindM19_<k>     - rExp9_<k>        - rDegVpNucM19_<k>
+
+d/dt(VpCytM17_<k,1:6>) = rExp7_<k> - VpCytM17_<k>/(VpCytM1tot<k>+1e-12) * (rFormVcytCplx + rFormDcytCplx)           - rDegVpCytM17_<k> 
+d/dt(VpCytM17_7)       = rExp7_7   - VpCytM17_7/(VpCytM1tot7+1e-12)     * rFormVcytCplx                             - rDegVpCytM17_7
+d/dt(VpCytM17_8)       = rExp7_8   - VpCytM17_8/(VpCytM1tot8+1e-12)     * (rFormVcytCplx + rFormDcytCplx)           - rDegVpCytM17_8
+d/dt(VpCytM17_9)       = rExp7_9   - VpCytM17_9/(VpCytM1tot9+1e-12)     * (rFormDcytCplx                 + rRelOP7) - rDegVpCytM17_9
+
+d/dt(VpCytM19_<k,1:6>) = rExp9_<k> - VpCytM19_<k>/(VpCytM1tot<k>+1e-12) * (rFormVcytCplx + rFormDcytCplx)           - rDegVpCytM19_<k> 
+d/dt(VpCytM19_7)       = rExp9_7   - VpCytM19_7/(VpCytM1tot7+1e-12)     * rFormVcytCplx                             - rDegVpCytM19_7
+d/dt(VpCytM19_8)       = rExp9_8   - VpCytM19_8/(VpCytM1tot8+1e-12)     * (rFormVcytCplx + rFormDcytCplx)           - rDegVpCytM19_8
+d/dt(VpCytM19_9)       = rExp9_9   - VpCytM19_9/(VpCytM1tot9+1e-12)     * (rFormDcytCplx                 + rRelOP7) - rDegVpCytM19_9
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% viral mRNA synthesis (mRNA of the DI-RNA was neglected)
+d/dt(Rm<k,1:9>) = rSynRm<k> - rDegRm<k>
+
+% Viral protein synthesis and consumption
+d/dt(P_Pb1)    = rSynPb1   - rFormRdrp
+d/dt(P_Pb2)    = rSynPb2   - rFormRdrp
+d/dt(P_Pa)     = rSynPa    - rFormRdrp
+d/dt(P_Rdrp)   = rFormRdrp - rSynRv    - rSynRc
+d/dt(P_Np)     = rSynNp    - rBindNpRv - rBindNpRc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+d/dt(P_M17)   = rSynM17    - rBindM17  - (P_M17/(P_M1tot+1e-12)) * ((N_M1  - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv7 + Lv8)/NnucM1)*rRel + (N_M1 - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv9 + Lv8)/NnucM1)*rRelD + (N_M1 - (OP7inRNGPar*Lv9)/NnucM1)*rRelOP7/OP7inRNGPar)
+d/dt(P_M19)   = rSynM19    - rBindM19  - (P_M19/(P_M1tot+1e-12)) * ((N_M1  - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv7 + Lv8)/NnucM1)*rRel + (N_M1 - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv9 + Lv8)/NnucM1)*rRelD + (N_M1 - (OP7inRNGPar*Lv9)/NnucM1)*rRelOP7/OP7inRNGPar)
+d/dt(P_M27)   = rSynM27                - (P_M27/(P_M2tot+1e-12)) * N_M2*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+d/dt(P_M29)   = rSynM29                - (P_M29/(P_M2tot+1e-12)) * N_M2*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+d/dt(P_Nep)    = rSynNep   - rExp7 - rExp9
+d/dt(P_Ha)     = rSynHa    - N_Ha*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+d/dt(P_Na)     = rSynNa    - N_Na*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+
+% vRNP complex formation and virus release
+d/dt(VcytCplx)   = rFormVcytCplx    - rRel    - rDegVcytCplx
+d/dt(DcytCplx)   = rFormDcytCplx    - rRelD   - rDegDcytCplx
+
+d/dt(Vrel)   = rRel
+d/dt(Drel)   = rRelD
+d/dt(OP7rel) = rRelOP7
+
+% total protein numbers
+d/dt(PB1tot)    = rSynPb1   - 8*(rRel+rRelD) - rRelOP7
+d/dt(Rdrptot)   = rFormRdrp - 8*(rRel+rRelD) - rRelOP7
+d/dt(NPtot)     = rSynNp    - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv7 + Lv8)/NnucNp*rRel - (Lv1 + Lv2 + Lv3 + Lv4 + Lv5 + Lv6 + Lv9 + Lv8)/NnucNp*rRelD - Lv9/NnucNp*rRelOP7
+
+d/dt(M1_WTtot)  = rSynM17   - (P_M17/(P_M1tot+1e-12)) * N_M1*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+d/dt(M1_OP7tot) = rSynM19   - (P_M19/(P_M1tot+1e-12)) * N_M1*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+
+d/dt(HAtot)     = rSynHa    - N_Ha*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+d/dt(NAtot)     = rSynNa    - N_Na*(rRel+rRelD+rRelOP7/OP7inRNGPar)
+
+% other
+d/dt(SafeGuardFlag) = 0           % set to 1 when vpNuc reach higher values (>1e7), prevent autocatalytic explosion
+
+% Initial conditions
+Vex(0)    = 10
+VattHi(0) = 0
+VattLo(0) = 0
+Ven(0)    = 0
+Vfus(0)   = 0
+Vcyt(0)   = 0
+
+VpNuc<k,1:9>(0)    = 0
+Cp<k,1:9>(0)       = 0
+RcRdrp<k,1:9>(0)   = 0
+RvRdrp<k,1:9>(0)   = 0
+VpNucM17_<k,1:9>(0) = 0
+VpNucM19_<k,1:9>(0) = 0
+VpCytM17_<k,1:9>(0) = 0
+VpCytM19_<k,1:9>(0) = 0
+
+Rm<k,1:9>(0) = 0
+
+P_Pb1(0)    = 0
+P_Pb2(0)    = 0
+P_Pa(0)     = 0
+P_Rdrp(0)   = 0
+P_Np(0)     = 0
+P_M17(0)    = 0
+P_M19(0)    = 0
+P_M27(0)    = 0
+P_M29(0)    = 0
+P_Nep(0)    = 0
+P_Ha(0)     = 0
+P_Na(0)     = 0
+
+
+VcytCplx(0)   = 0
+DcytCplx(0)   = 0
+
+Vrel(0)   = 0
+Drel(0)   = 0
+OP7rel(0) = 0
+
+PB1tot(0)    = 0
+Rdrptot(0)   = 0
+NPtot(0)     = 0
+M1_WTtot(0)  = 0
+M1_OP7tot(0) = 0
+HAtot(0)     = 0
+NAtot(0)     = 0
+
+SafeGuardFlag(0) = 0
+
+********** MODEL PARAMETERS
+Lm1 = 2320              %nucleotides  length of segment 1's mRNA encoding PB2 [4]
+Lm2 = 2320              %nucleotides  length of segment 2's mRNA encoding PB1 [4]
+Lm3 = 2211              %nucleotides  length of segment 3's mRNA encoding PA [4]
+Lm4 = 1757              %nucleotides  length of segment 4's mRNA encoding HA [4]
+Lm5 = 1540              %nucleotides  length of segment 5's mRNA encoding NP [4]
+Lm6 = 1392              %nucleotides  length of segment 6's mRNA encoding NA [4]
+Lm7 = 1005              %nucleotides  length of segment 7's unspliced mRNA encoding M1 [4]
+Lm8 = 868               %nucleotides  length of segment 8's unspliced mRNA encoding NEP [4]
+Lm9 = 1005              %nucleotides  length of segment 9's mRNA encoding M1 and M2 (assuming same as the 7th segment)
+
+Lv1 = 2341              %nucleotides  length of segment 1's vRNA and cRNA encoding PB2 [4]
+Lv2 = 2341              %nucleotides  length of segment 2's vRNA and cRNA encoding PB1 [4]
+Lv3 = 2233              %nucleotides  length of segment 3's vRNA and cRNA encoding PA [4]
+Lv4 = 1778              %nucleotides  length of segment 4's vRNA and cRNA encoding HA [4]
+Lv5 = 1565              %nucleotides  length of segment 5's vRNA and cRNA encoding NP [4]
+Lv6 = 1413              %nucleotides  length of segment 6's vRNA and cRNA encoding NA [4]
+Lv7 = 1027              %nucleotides  length of segment 7's vRNA and cRNA encoding M1 and M2 [4]
+Lv8 = 890               %nucleotides  length of segment 8's vRNA and cRNA encoding NEP and NS2 [4]
+Lv9 = 1027             %nucleotides  length of segment 9's vRNA and cRNA encoding M1 and M2 (assuming same as the 7th segment)
+
+%Fadv_cRNA = 0          %(-)  replication advantage, i.e., factor with which the cRNA synthesis of the DI--RNA exceeds the synthesis of its full--length segment
+%Fadv_vRNA = 0          %(-)  replication advantage, i.e., factor with which the vRNA synthesis of the DI--RNA exceeds the synthesis of its full--length segment 
+%Fbind     = 0          %(-)  reduction in binding for OP7-derived M1
+
+Fspl7 = 0.02            %-  fraction of spliced M2 mRNAs compared to total mRNAs of segment 7 (based on the ratio of M1 to M2 in a virion)
+Fspl8 = 0.125           %-  fraction of spliced NEP mRNAs compared to total mRNAs of segment 8 [7]
+
+%N_Rdrp = 45             %molecules/virion  number of polymerase molecules in a virion [4]
+%N_Ha   = 500            %molecules/virion  number of HA molecules in a virion [4] 
+%N_Np   = 1000           %molecules/virion  number of NP molecules in a virion [4]
+%N_Na   = 100            %molecules/virion  number of NA molecules in a virion [4] 
+%N_M1   = 3000           %molecules/virion  number of M1 molecules in a virion [4]
+%N_M2   = 40             %molecules/virion  number of M2 molecules in a virion [4]
+%N_Nep  = 165            %molecules/virion  number of NEP molecules in a virion [4]
+
+N_Rdrp = 8              %molecules/virion  number of polymerase molecules in a virion (Jan calculations + own logic, 1 Rdrp per vRNP)
+N_Ha   = 233            %molecules/virion  number of HA molecules in a virion (Jan calculations) 
+N_Np   = 568            %molecules/virion  number of NP molecules in a virion (Jan calculations + fits to own calculations of NPs per 8 vRNPs)
+N_Na   = 30             %molecules/virion  number of NA molecules in a virion (Jan calculations)
+N_M1   = 2700           %molecules/virion  number of M1 molecules in a virion (Jan calculations)
+N_M2   = 3              %molecules/virion  number of M2 molecules in a virion (Jan calculations)
+N_Nep  = 8              %molecules/virion  number of NEP molecules in a virion (Jan calculations + own logic, 1 NEP per vRNP)
+
+BtotHi  = 150           %sites  total amount of high-affinity binding sites on the cell surface [5]
+BtotLo  = 1000          %sites  total amount of low-affinity binding sites on the cell surface [5]
+NnucNp  = 24            %nucleotides  number of nucleotides bound by one NP molecule [6]
+NnucM1  = 200           %nucleotides  number of nucleotides bound by one M1 molecules [10]
+Drib    = 160           %nucleotides  distance between two adjacent ribosomes on an mRNA [2]
+
+kAttHi = 8.09e-2        %1/(site*h)  attachment rate of a virus particle to high-affinity binding sites
+kAttLo = 4.55e-4        %1/(site*h)  attachment rate of a virus particle to low-affinity binding sites
+kEqHi  = 1.13e-2        %1/site  equilibrium constant for the attachment of virions to the high-affinity binding sites [5]
+kEqLo  = 8.33e-5        %1/site  equilibrium constant for the attachment of virions to the low-affinity binding sites [5]
+kEn    = 4.8            %1/h  endocytosis rate of virions bound to the high-affinity and low-affinity binding sites
+kFus   = 3.21           %1/h  fusion rate of virions in late endosomes
+Ffus   = 0.51           %-  fraction of fusion-competent virions
+
+kImp = 6                %1/h  nuclear import rate of cytoplasmic vRNPs which are not bound to M1 [3] 
+kExp = 1e-6             %1/(molecule*h)  combined rate of NEP binding to M1-vRNP complexes and subsequent transport out of the nucleus (adjusted so that there is a low amount of M1-vRNP complexes in the nucleus [1])
+
+kSynP = 64800           %nucleotides/h  synthesis rate of proteins (ribosomes decode on average 6 codons/s [8])
+kSynV = 13.86           %1/h  synthesis rate of vRNAs
+kSynC = 1.38            %1/h  synthesis rate of cRNAs
+kSynM = 1.8e5           %nucleotides/h  synthesis rate of mRNAs
+
+%kBindRdrp = 1           %1/(h*molecule)  binding rate of polymerase complexes to cRNA and vRNA 
+kBindNp   = 3.01e-4     %1/(h*molecule)  binding rate of NP to RdRp-cRNA and RdRp-vRNA complexes
+kBindM1   = 1.39e-6     %1/(h*molecule)  binding rate of M1 to nuclear vRNPs
+
+kRdrp = 1               %1/(h*molecule^2)  formation rate of functional polymerase complexes from the three subunits (we assume that new polymerases are rapidly formed from their subunits)
+
+kDegR     = 36.36       %1/h  degradation rate of nascent cRNA and vRNA
+kDegM     = 0.33        %1/h  degradation rate of mRNA
+kDegRrdrp = 4.25        %1/h  degradation rate of RdRp-cRNA and RdRp-vRNA complexes
+kDegRnp   = 0.09        %1/h  degradation rate of RNPs 
+
+kCplx = 1               %1/(h*molecule^7) formation rate of vRNP complexes prior to packaging (we assume this step occurs fast)
+kCplxD = 1              %1/(h*molecule^7) formation rate of vRNP complexes prior to packaging (we assume this step occurs fast)
+
+kRel    = 3.7e-3          %virions/(h*molecule)  release rate of progeny virions from the cell (includes all steps of transport to the cell membrane and budding)
+KvRel   = 10              %virions  components for this number of complete virions must be present in the cell to reach half the maximum release rate
+
+pInLowSeg  = 1          %-  average number of vRNPs from suppressed segment per infecting particle (here: Seg 7)
+pInMedSeg  = 1          %-  average number of vRNPs from regular non-suppressed segments per infecting particle
+pInHighSeg = 0          %-  average number of vRNPs from elevated segment per infecting particle (here: OP7 Seg 7)
+
+Fm = 0.12               %-  reduction of polymerase segment mRNA synthesis [Rüdiger 2021, PLOS Comp Biol]
+
+%OP7inUP     = 8
+OP7inRNGPar = 8
+
+********** MODEL VARIABLES
+kDisHi   = kAttHi/kEqHi                %1/h  dissociation rate of virions from the high-affinity binding sites
+kDisLo   = kAttLo/kEqLo                %1/h  dissociation rate of virions from the low-affinity binding sites
+Bhi      = BtotHi - VattHi             %sites  free high-affinity binding sites
+Blo      = BtotLo - VattLo             %sites  free  low-affinity binding sites
+kDegVen  = (1-Ffus)/Ffus*kFus          %1/h  degradation rate of virions which do not fuse with the endosomal membrane
+
+RvSeg7 = pInLowSeg *(VattHi + VattLo + Ven + Vcyt) + VcytCplx             + RvRdrp7 + VpNuc7 + VpNucM17_7 + VpNucM19_7 + VpCytM17_7 + VpCytM19_7 %total amount of intracellular vRNA of segment 7
+RvSeg5 = pInMedSeg *(VattHi + VattLo + Ven + Vcyt) + VcytCplx  + DcytCplx + RvRdrp5 + VpNuc5 + VpNucM17_5 + VpNucM19_5 + VpCytM17_5 + VpCytM19_5 %total amount of intracellular vRNA of segment 5
+RvSeg8 = pInMedSeg *(VattHi + VattLo + Ven + Vcyt) + VcytCplx  + DcytCplx + RvRdrp8 + VpNuc8 + VpNucM17_8 + VpNucM19_8 + VpCytM17_8 + VpCytM19_8 %total amount of intracellular vRNA of segment 8
+RvSeg9 = pInHighSeg*(VattHi + VattLo + Ven + Vcyt) +             DcytCplx + RvRdrp9 + VpNuc9 + VpNucM17_9 + VpNucM19_9 + VpCytM17_9 + VpCytM19_9 %total amount of intracellular OP7
+
+RcSeg7    = RcRdrp7 + Cp7                          %total amount of intracellular cRNA of segment 7
+RcSeg5    = RcRdrp5 + Cp5                          %total amount of intracellular cRNA of segment 5
+RcSeg8    = RcRdrp8 + Cp8                          %total amount of intracellular cRNA of segment 8
+RcSeg9    = RcRdrp9 + Cp9                          %total amount of intracellular OP7
+
+MrnaTotal = Rm1 + Rm2 + Rm3 + Rm4 + Rm5 + Rm6 + Rm7 + Rm8 + Rm9       %total amount of intracellular mRNA
+ProtPerH  = kSynP/Drib * MrnaTotal                                    %total production of viral proteins (including non-spliced Rm7 + Rm8)
+
+P_M1tot = P_M17 + P_M19
+P_M2tot = P_M27 + P_M29
+VpNucM1_<k,1:9> = VpNucM17_<k> + VpNucM19_<k>
+VpCytM1tot<k,1:9> = VpCytM17_<k> + VpCytM19_<k>
+
+S5     = Vrel + Drel
+S7_WT  = Vrel
+S7_OP7 = Drel + OP7rel
+HA     = Vrel + Drel + OP7rel/OP7inRNGPar
+TCID   = Vrel
+
+% Entry of standard virus partilces
+% ---------------------------------
+rAttHi    = kAttHi*Bhi*Vex
+rAttLo    = kAttLo*Blo*Vex
+rDisHi    = kDisHi*VattHi
+rDisLo    = kDisLo*VattLo
+rEnVattHi = kEn*VattHi
+rEnVattLo = kEn*VattLo
+rEn       = kEn*(VattHi+VattLo)
+rFus      = kFus*Ven
+rDegVen   = kDegVen*Ven
+
+% nuclear import of vRNPs, viral transcription and replication
+% ------------------------------------------------------------
+rImp           = kImp*Vcyt
+rImpLowSeg     = pInLowSeg *kImp*Vcyt
+rImpMedSeg     = pInMedSeg *kImp*Vcyt
+rImpHighSeg    = pInHighSeg*kImp*Vcyt
+
+rExp7_<k,1:9>  = kExp*P_Nep*VpNucM17_<k>
+rExp9_<k,1:9>  = kExp*P_Nep*VpNucM19_<k>
+rExp7 = arraysumIQM(rExp7_<k,1:9>)
+rExp9 = arraysumIQM(rExp9_<k,1:9>)
+
+rSynRc<k,1:9> = kSynC*VpNuc<k> * P_Rdrp
+rSynRv<k,1:9> = kSynV*Cp<k>    * P_Rdrp
+rSynRc        = arraysumIQM(rSynRc<k,1:9>)
+rSynRv        = arraysumIQM(rSynRv<k,1:9>)
+%%%%%rSynRc9      = (Fadv_cRNA+1)*kSynC*VpNuc9   * P_Rdrp
+%%%%%rSynRv9      = (Fadv_vRNA+1)*kSynV*Cp9      * P_Rdrp
+
+rBindM17_<k,1:9> = kBindM1*P_M17*VpNuc<k>
+rBindM19_<k,1:9> = kBindM1*P_M19*VpNuc<k>
+rBindM17 = arraysumIQM(Lv<k,1:9>/NnucM1*rBindM17_<k,1:9>)
+rBindM19 = arraysumIQM(Lv<k,1:9>/NnucM1*rBindM19_<k,1:9>)
+%%%%%rBindM19_<k,1:9> = Fbind*kBindM1*P_M19*VpNuc<k>
+
+rBindNpRc<k,1:9>   = kBindNp*P_Np*RcRdrp<k>
+rBindNpRv<k,1:9>   = kBindNp*P_Np*RvRdrp<k>
+rBindNpRc    = arraysumIQM(Lv<k,1:9>/NnucNp*rBindNpRc<k,1:9>)
+rBindNpRv    = arraysumIQM(Lv<k,1:9>/NnucNp*rBindNpRv<k,1:9>)
+
+rDegCp<k,1:9>        = kDegRnp*Cp<k>
+rDegRcRdrp<k,1:9>    = kDegRrdrp*RcRdrp<k>
+rDegRvRdrp<k,1:9>    = kDegRrdrp*RvRdrp<k>
+rDegVpNuc<k,1:9>     = kDegRnp*VpNuc<k>
+rDegVpNucM17_<k,1:9> = kDegRnp*VpNucM17_<k>
+rDegVpNucM19_<k,1:9> = kDegRnp*VpNucM19_<k>
+rDegVpCytM17_<k,1:9> = kDegRnp*VpCytM17_<k>
+rDegVpCytM19_<k,1:9> = kDegRnp*VpCytM19_<k>
+rDegVcytCplx         = kDegRnp*VcytCplx
+rDegDcytCplx         = kDegRnp*DcytCplx
+
+% mRNA and protein synthesis
+% --------------------------
+rSynRm<k,1:3> = Fm * kSynM/Lm<k> * VpNuc<k> % reduced mRNA synthesis for polymerase segments
+rSynRm<k,4:9> =      kSynM/Lm<k> * VpNuc<k>
+
+rSynPb1    = kSynP/Drib*Rm2
+rSynPb2    = kSynP/Drib*Rm1
+rSynPa     = kSynP/Drib*Rm3
+rSynHa     = kSynP/Drib*Rm4
+rSynNp     = kSynP/Drib*Rm5
+rSynNa     = kSynP/Drib*Rm6
+rSynM17    = kSynP/Drib*(1-Fspl7)*Rm7
+rSynM19    = kSynP/Drib*(1-Fspl7)*Rm9
+rSynM27    = kSynP/Drib*Fspl7*Rm7
+rSynM29    = kSynP/Drib*Fspl7*Rm9
+rSynNep    = kSynP/Drib*Fspl8*Rm8
+
+rFormRdrp = kRdrp*P_Pb1*P_Pb2*P_Pa
+
+rDegRm<k,1:9> = kDegM*Rm<k>
+
+% vRNP complex formation and virus release
+% ----------------------------------------
+rFormVcytCplx   = kCplx  * VpCytM1tot7 * VpCytM1tot1*VpCytM1tot2*VpCytM1tot3*VpCytM1tot4*VpCytM1tot5*VpCytM1tot6*VpCytM1tot8
+rFormDcytCplx   = kCplxD * VpCytM1tot9 * VpCytM1tot1*VpCytM1tot2*VpCytM1tot3*VpCytM1tot4*VpCytM1tot5*VpCytM1tot6*VpCytM1tot8
+
+rRel    = kRel * VcytCplx/(VcytCplx+DcytCplx+VpCytM1tot9+KvRel)    * (P_Ha/(KvRel*N_Ha+P_Ha)) *  (P_Na/(KvRel*N_Na+P_Na)) * (P_M1tot/(KvRel*N_M1+P_M1tot)) * (P_M2tot/(KvRel*N_M2+P_M2tot))
+rRelD   = kRel * DcytCplx/(VcytCplx+DcytCplx+VpCytM1tot9+KvRel)    * (P_Ha/(KvRel*N_Ha+P_Ha)) *  (P_Na/(KvRel*N_Na+P_Na)) * (P_M1tot/(KvRel*N_M1+P_M1tot)) * (P_M2tot/(KvRel*N_M2+P_M2tot))
+rRelOP7 = kRel * VpCytM1tot9/(VcytCplx+DcytCplx+VpCytM1tot9+KvRel) * (P_Ha/(KvRel*N_Ha+P_Ha)) *  (P_Na/(KvRel*N_Na+P_Na)) * (P_M1tot/(KvRel*N_M1+P_M1tot)) * (P_M2tot/(KvRel*N_M2+P_M2tot))
+
+********** MODEL REACTIONS
+
+********** MODEL FUNCTIONS
+
+********** MODEL EVENTS
+SafeGuard = gt(VpNuc8,1e7),SafeGuardFlag,1,VpNuc1,-1,VpNuc2,-1,VpNuc3,-1,VpNuc4,-1,VpNuc5,-1,VpNuc6,-1,VpNuc7,-1,VpNuc8,-1,VpNuc9,-1
+SafeGuard2 = gt(VpNuc9,1e7),SafeGuardFlag,1,VpNuc1,-1,VpNuc2,-1,VpNuc3,-1,VpNuc4,-1,VpNuc5,-1,VpNuc6,-1,VpNuc7,-1,VpNuc8,-1,VpNuc9,-1
+
+********** MODEL MATLAB FUNCTIONS
