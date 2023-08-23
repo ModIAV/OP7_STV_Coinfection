@@ -1,5 +1,5 @@
 # STV_DIP_Coinfection
-This code implements an intracellular model of OP7 and influenza A virus (IAV)co-infection developed at the MPI Magdeburg. This model is an extension of the IAV and defective interfering particle co-infection model by Laske et al. The current model version is documented in [1]. 
+This code implements an intracellular model of OP7 and influenza A virus (IAV) co-infection developed at the MPI Magdeburg. This model is an extension of the IAV and defective interfering particle co-infection model by Laske et al. The current model version is documented in [1]. 
 
 ## References
 1. Rüdiger D, Pelz L, Hein MD, Kupke SY, Reichl U. Multiscale model of defective interfering particle replication for influenza A virus infection in animal cell culture. submitted
