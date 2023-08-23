@@ -13,15 +13,15 @@ This code implements an intracellular model of OP7 and influenza A virus (IAV) c
 ## Optional programs (for faster simulation and optimization)
 - C/C++ compiler: Creates MEX-files for a faster simulation with the SB Toolbox (e.g. MinGW 6.3 C/C++ for Windows or GCC for Linux)
 
-- CVODE solver from SUNDIALS: Simulates MEX-files. Cohen and Hindmarsh (Computers in Physics, 1996), available at https://computation.llnl.gov/projects/sundials/sundials-software
+- CVODE solver from SUNDIALS: Simulates MEX-files. Cohen and Hindmarsh (Computers in Physics, 1996), available at https://computing.llnl.gov/projects/sundials/sundials-software
 
 ## Running the code and main options
 The function `OP7_STV_CoinfectionModel_Main.m` is used for model simulation and parameter estimation. Model simulations can be performed by running this script. The following main options are available:
 -	Define if a model simulation or parameter estimation should be conducted. Set the variable `p.OptimizeParameters` to 0 or 1. 
 
 -	Define if which parameters should be estimated by setting the variable `p.FittingStrategy`:
-   + 1 = estimate the basic replication parameters to IAV-only infection data
-   + 2 = estimate the parameters related to the mechanisms of OP7 interference with IAV replication to co-infection data
+   - 1 = estimate the basic replication parameters to IAV-only infection data
+   - 2 = estimate the parameters related to the mechanisms of OP7 interference with IAV replication to co-infection data
 
 ## Contributors
 The code base was written by Stefan Heldt. Code and model extension was performed by Daniel Rüdiger. Initial works on the OP7 and IAV co-infection model were performed by Tanja Laske and Carolina Pontes.
