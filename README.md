@@ -20,7 +20,7 @@ The function `OP7_STV_CoinfectionModel_Main.m` is used for model simulation and 
 -	Define if a model simulation or parameter estimation should be conducted. Set the variable `p.OptimizeParameters` to 0 or 1. 
 
 -	Define if which parameters should be estimated by setting the variable `p.FittingStrategy`:
-  *	1 = estimate the basic replication parameters to IAV-only infection data
+        1 = estimate the basic replication parameters to IAV-only infection data
   * 2 = estimate the parameters related to the mechanisms of OP7 interference with IAV replication to co-infection data
 
 ## Contributors
