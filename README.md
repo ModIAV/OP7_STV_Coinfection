@@ -1,9 +1,9 @@
 # STV_DIP_Coinfection
-This code implements an intracellular model of OP7 and influenza A virus (IAV) co-infection developed at the MPI Magdeburg. This model is an extension of the IAV and defective interfering particle co-infection model by Laske et al [2]. The current model version is documented in [1]. 
+This code implements an intracellular model of OP7 and influenza A virus (IAV) co-infection developed at the MPI Magdeburg. This model is an extension of the IAV and defective interfering particle co-infection model by Laske et al [1]. The current model version is documented in [2]. 
 
 ## References
-1. Rüdiger D, Piasecka J, Küchler J, Pontes C, Laske T, Kupke SY, Reichl U. Mathematical model calibrated to in vitro data predicts mechanisms of antiviral action of the influenza ddefective interfering particle "OP7". 2023. submitted
-2. Laske T, Heldt FS, Hoffmann H, Frensing T, Reichl U. Modeling the intracellular replication of influenza A virus in the presence of defective interfering RNAs. Virus Research. 2016;213:90-99. https://www.doi.org/10.1016/j.virusres.2015.11.016
+1. Laske T, Heldt FS, Hoffmann H, Frensing T, Reichl U. Modeling the intracellular replication of influenza A virus in the presence of defective interfering RNAs. Virus Research. 2016;213:90-99. https://www.doi.org/10.1016/j.virusres.2015.11.016
+2. Rüdiger D, Piasecka J, Küchler J, Pontes C, Laske T, Kupke SY, Reichl U. Mathematical model calibrated to in vitro data predicts mechanisms of antiviral action of the influenza ddefective interfering particle "OP7". 2023. submitted
 
 ## Requirements
 - MATLAB (MathWorks, Inc.)
