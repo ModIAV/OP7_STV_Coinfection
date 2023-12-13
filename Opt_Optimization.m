@@ -177,40 +177,39 @@ p.safety.Bestf = Inf;
 p.safety.xbest = ones(size([p.x0],1),1);
 
 AllEstParas = [p.PaOpt p.IcOpt p.PaOpt_Titers];
-% Set upper and lower bounds for special parameters
-        p.x_L(strcmp('KvRel',AllEstParas)) = 1;
-        
-        p.x_U(strcmp('FPar_STV',AllEstParas)) = 1;        
-        p.x_U(strcmp('FPar_COI',AllEstParas)) = 1;        
-        
-        if ( ~p.LogPara )
-            p.x_L(strcmp('Fadv_cRNA',AllEstParas)) = 1e-3;
-            p.x_L(strcmp('Fadv_mRNA',AllEstParas)) = -1;
-            p.x_L(strcmp('Fadv_vRNA',AllEstParas)) = 1e-3;        
-            p.x_L(strcmp('Fadv_cvRNA',AllEstParas))= -1;       
-            p.x_L(strcmp('Fexp',AllEstParas))      = 0;
-            p.x_L(strcmp('Fbind',AllEstParas))     = 0;
-            
-            p.x_U(strcmp('Fadv_cRNA',AllEstParas)) = 10;
-            p.x_U(strcmp('Fadv_mRNA',AllEstParas)) = 10;
-            p.x_U(strcmp('Fadv_vRNA',AllEstParas)) = 10;    
-            p.x_U(strcmp('Fadv_cvRNA',AllEstParas))= 10;
-            p.x_U(strcmp('Fexp',AllEstParas))      = 1;
-            p.x_U(strcmp('Fbind',AllEstParas))     = 1;                   
-        end
-        
-        if ( p.LogPara )
-            p.x_L = log10(p.x_L);
-            p.x_U = log10(p.x_U);
-            p.x0  = log10(p.x0);
-        end                 
+
+% Set upper and lower bounds for special parameters        
+p.x_U(strcmp('FPar_STV',AllEstParas)) = 1;        
+p.x_U(strcmp('FPar_COI',AllEstParas)) = 1;        
+
+if ( ~p.LogPara )
+    p.x_L(strcmp('Fadv_cRNA',AllEstParas)) = 1e-3;
+    p.x_L(strcmp('Fadv_mRNA',AllEstParas)) = -1;
+    p.x_L(strcmp('Fadv_vRNA',AllEstParas)) = 1e-3;        
+    p.x_L(strcmp('Fadv_cvRNA',AllEstParas))= -1;       
+    p.x_L(strcmp('Fexp',AllEstParas))      = 0;
+    p.x_L(strcmp('Fbind',AllEstParas))     = 0;
+    
+    p.x_U(strcmp('Fadv_cRNA',AllEstParas)) = 10;
+    p.x_U(strcmp('Fadv_mRNA',AllEstParas)) = 10;
+    p.x_U(strcmp('Fadv_vRNA',AllEstParas)) = 10;    
+    p.x_U(strcmp('Fadv_cvRNA',AllEstParas))= 10;
+    p.x_U(strcmp('Fexp',AllEstParas))      = 1;
+    p.x_U(strcmp('Fbind',AllEstParas))     = 1;                   
+end
+
+if ( p.LogPara )
+    p.x_L = log10(p.x_L);
+    p.x_U = log10(p.x_U);
+    p.x0  = log10(p.x0);
+end                 
         
 switch lower(p.Solver)
     case {'fminsearch'}
         %% Fminsearch
         [xbest, result.ObjFunVal] = ...
             fminsearch(@Opt_ObjFun, [p.x0;], p.FminOptions);
-        result.xbest = xbest;
+        result.xbest = xbest';
 
     case {'fmincon'}
         [xbest, result.ObjFunVal] = ...
@@ -218,30 +217,26 @@ switch lower(p.Solver)
             p.x_L,p.x_U,[],p.FminOptions);
         result.xbest = xbest;
 
-    case {'fssm'}
-        %% fSSm
-        RandStream.setGlobalStream(RandStream('mt19937ar','seed',sum(100*clock)));    
+    case {'globalsearch'}        
+        % define constraints
+        A = [];    b = [];
+        Aeq = [];  beq = [];
+        
+        % create problem structure
+        problem = createOptimProblem(...
+                  'fmincon',...
+                  'objective',@Opt_ObjFun,...
+                  'x0',p.x0,'Aineq',A,'bineq',b,'Aeq',Aeq,'beq',beq,...
+                  'lb',p.x_L,'ub',p.x_U);
+        
+        % create GlobalSearch Object
+        gs = GlobalSearch('Display', 'iter');
+        
+        % run GlobalSearch
+        [x,f] = run(gs,problem);
 
-        p.problem.x_0     = [p.x0];
-        p.problem.x_L     = [p.x_L];
-        p.problem.x_U     = [p.x_U];
-        p.problem.int_var = 0;
-        p.problem.bin_var = 0;
-        p.problem.c_L     = [];
-        p.problem.c_U     = [];
-        p.problem.N       = numel(d.time.RNA);
-
-        % initialize parameter set recording matrix
-        p.record = zeros(0,size(p.problem.x_0,1));
-
-        p.problem.f       = 'Opt_ObjFun';
-        [result.fSSm] = fssm_kernel(p.problem, p.fSSmOptions);
-
-
-        xbest  = result.fSSm.xbest;
-
-        result.xbest  = xbest;
-        result.ObjFunVal = result.fSSm.fbest;
+        result.xbest     = x';
+        result.ObjFunVal = f;        
 
     otherwise
         warning(char(['Optimization - No optimization algorithm "',p.solver,'" found!']));

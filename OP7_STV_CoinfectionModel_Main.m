@@ -22,9 +22,9 @@ end
 
 % check for fSSm algorithm
 ChangeSearchAlgorithm = 0;
-if ( ~exist('fssm_kernel','file') )
+if ( ~exist('globalsearch','file') )
     ChangeSearchAlgorithm = 1;
-	fprintf('fSSm algortihm not found. Switching to "fmincon".\n\n') 
+	fprintf('GlobalSearch algortihm not found. Switching to "fmincon".\n\n') 
 end
 
 tmp = dir('MexModelFile_Opt.mexa64'); % delete MEX files to prevent occasional crashes
@@ -32,7 +32,7 @@ for i = 1:length(tmp);  delete(tmp(i).name);  end
 
 %% Options
 p.ModelName          = 'OP7_STV_ModelFile.txt'; % name of model file
-p.OptimizeParameters = 0; % enable parameter optimization
+p.OptimizeParameters = 1; % enable parameter optimization
     %%% Fitting strategy
     p.FittingStrategy = 1; % 1 - only fit RKI data
                            % 2 - fit OP7 data w/ estimated baseline parameters
@@ -112,6 +112,10 @@ p.MaxTime            = 1*60*60; %maximum run time of optimization solver in seco
 p.LogPara            = 0; % use logarithmic parameters for estimation (converted internally)
                        
 if ( p.FittingStrategy == 1 )
+    if ( p.OptimizeParameters )
+        fprintf('Fitting model to STV infection data.\n\n')
+    end
+
     p.PaOpt        = {'kSynV', ...
                       'kSynC', ...
                       'kSynM', ... 
@@ -141,6 +145,10 @@ if ( p.FittingStrategy == 1 )
     p.Composition2FitPassages = 0;    % fit virus titers determined at 12 hpi    
 
 elseif ( p.FittingStrategy == 2 )
+    if  ( p.OptimizeParameters )
+        fprintf('Fitting model to OP7/STV co-infection data.\n\n')
+    end
+
     p.PaOpt = {'Fadv_cvRNA', ...
                'Fadv_mRNA', ...
                }; %parameters subject to optimization in the intracellular model          
@@ -181,13 +189,10 @@ p.IcDev = 10;                 %upper and lower bounds of IC deviate by */ IcDev 
 if ( ChangeSearchAlgorithm )
     p.Solver  = 'fmincon';             %optimization solver: 'fminsearch', 'fmincon', 'fSSm'
 else
-    p.Solver  = 'fSSm';             
+    p.Solver  = 'globalsearch';             
 end
 p.MaxIter = 1e10; % e8                %maximum iterations
 p.MaxEval = 1e9; % e7                %maximum function evaluations
-p.SearchRadiusConfidence = []; 0.2; % parameter for CMA-ES algorithm, defines search range (confidence radius), not required when upper + lower bounds are defined
-
-p.SmallRefset    = 1; % reduce Refset size for faster (but less robust) estimation   
 
 p.ObjFunCal = 'log';      %'normal': model and experiment are compared quantitatively 
                                        %'Log': model states and experimental values are logarithmized prior to comparison
